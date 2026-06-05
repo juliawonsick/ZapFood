@@ -1,8 +1,3 @@
-"""
-Banco de dados SQLite via módulo sqlite3 nativo do Python.
-Sem ORM — SQL puro para ficar fácil de explicar na apresentação.
-"""
-
 import sqlite3
 import os
 
@@ -11,47 +6,47 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "zapfood.db")
 
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row   # retorna dicts em vez de tuplas
+    conn.row_factory = sqlite3.Row
     return conn
 
 
 def init_db():
-    """Cria as tabelas se ainda não existirem."""
     conn = get_conn()
     cur  = conn.cursor()
 
-    # Tabela de usuários
     cur.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             nome       TEXT    NOT NULL,
             email      TEXT    NOT NULL UNIQUE,
             senha_hash TEXT    NOT NULL,
-            perfil     TEXT    NOT NULL DEFAULT 'cliente',  -- 'cliente' | 'cozinha'
+            perfil     TEXT    NOT NULL DEFAULT 'cliente',
             criado_em  TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
         )
     """)
 
-    # Usuário padrão da cozinha (admin)
-    import sys, os
-    sys.path.insert(0, os.path.dirname(__file__))
-    from auth import hash_senha
-    cur.execute("""
-        INSERT OR IGNORE INTO usuarios (nome, email, senha_hash, perfil)
-        VALUES (?, ?, ?, ?)
-    """, ("Cozinha Admin", "cozinha@zapfood.com", hash_senha("cozinha123"), "cozinha"))
-    cur.execute("""
-        UPDATE usuarios
-           SET senha_hash = ?, perfil = 'cozinha'
-         WHERE email = ?
-    """, (hash_senha("cozinha123"), "cozinha@zapfood.com"))
+    # Verifica se a cozinha já existe — só insere se não existir
+    # NUNCA faz UPDATE do hash, senão invalida a senha a cada restart
+    existente = cur.execute(
+        "SELECT id FROM usuarios WHERE email = ?", ("cozinha@zapfood.com",)
+    ).fetchone()
+
+    if not existente:
+        import sys
+        sys.path.insert(0, os.path.dirname(__file__))
+        from auth import hash_senha
+        cur.execute("""
+            INSERT INTO usuarios (nome, email, senha_hash, perfil)
+            VALUES (?, ?, ?, ?)
+        """, ("Cozinha Admin", "cozinha@zapfood.com", hash_senha("cozinha123"), "cozinha"))
+        print("[OK] Usuario cozinha criado")
+    else:
+        print("[OK] Usuario cozinha ja existe")
 
     conn.commit()
     conn.close()
     print("[OK] Banco SQLite inicializado")
 
-
-# ── CRUD usuários ─────────────────────────────
 
 def criar_usuario(nome: str, email: str, senha_hash: str, perfil: str = "cliente"):
     conn = get_conn()
@@ -63,7 +58,7 @@ def criar_usuario(nome: str, email: str, senha_hash: str, perfil: str = "cliente
         conn.commit()
         return True
     except sqlite3.IntegrityError:
-        return False   # email já existe
+        return False
     finally:
         conn.close()
 

@@ -1,9 +1,8 @@
-// URL da API: automática quando servida pelo FastAPI, manual para dev local
 const API = window.location.port === "8000" || window.location.hostname !== "localhost"
   ? window.location.origin
   : "http://localhost:8000";
 
-// Detecta se está acessando via ngrok e exibe o banner
+
 (function detectNgrok(){
   if(API.includes("ngrok")){
     document.getElementById("ngrok-banner").style.display="flex";
@@ -26,7 +25,6 @@ const STATUS_LABELS= {
   pronto:"Pronto",entregando:"Saiu para entrega",entregue:"Entregue",cancelado:"Cancelado"
 };
 
-/* ── utils ── */
 const fmt = v => "R$ " + parseFloat(v).toFixed(2).replace(".",",");
 
 function toast(msg, tipo="ok"){
@@ -55,7 +53,6 @@ function userHeaders(extra={}){
   };
 }
 
-/* ── auth tabs ── */
 function switchAuthTab(tab){
   document.getElementById("form-login").style.display    = tab==="login"    ?"block":"none";
   document.getElementById("form-cadastro").style.display = tab==="cadastro" ?"block":"none";
@@ -63,7 +60,6 @@ function switchAuthTab(tab){
   document.getElementById("tab-cadastro").classList.toggle("active", tab==="cadastro");
 }
 
-/* ── validação ── */
 const validEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 function validarLogin(){
@@ -88,7 +84,6 @@ function validarCadastro(){
   return ok;
 }
 
-/* ── login ── */
 async function fazerLogin(){
   if(!validarLogin()) return;
   const btn=document.getElementById("btn-login");
@@ -105,7 +100,6 @@ async function fazerLogin(){
   btn.disabled=false; btn.textContent="Entrar";
 }
 
-/* ── cadastro ── */
 async function fazerCadastro(){
   if(!validarCadastro()) return;
   const btn=document.getElementById("btn-cadastro");
@@ -138,7 +132,6 @@ function logout(){
   document.getElementById("app-screen").style.display="none";
 }
 
-/* ── iniciar app ── */
 function iniciarApp(){
   document.getElementById("auth-screen").style.display="none";
   document.getElementById("app-screen").style.display="block";
@@ -166,7 +159,6 @@ function showPage(nome,btn){
   if(nome==="cozinha") carregarCozinha();
 }
 
-/* ── drawer ── */
 function abrirDrawer(){
   document.getElementById("cart-overlay").classList.add("open");
   document.getElementById("cart-drawer").classList.add("open");
@@ -178,7 +170,6 @@ function fecharDrawer(){
   document.body.style.overflow="";
 }
 
-/* ── cardápio ── */
 async function carregarCardapio(){
   try{
     const res=await fetch(`${API}/cardapio`,{headers:userHeaders()});
@@ -218,7 +209,6 @@ function filtrar(cat,btn){
   btn.classList.add("active"); renderMenu();
 }
 
-/* ── carrinho ── */
 function addItem(id){
   const item=cardapio.find(i=>i.id===id); if(!item) return;
   carrinho[id]?carrinho[id].quantidade++:(carrinho[id]={...item,quantidade:1});
@@ -269,7 +259,6 @@ function renderCarrinho(){
   ["btn-pedido","btn-pedido-d"].forEach(id=>{const b=document.getElementById(id);if(b){b.disabled=!show;b.textContent=txt;}});
 }
 
-/* ── fazer pedido ── */
 async function fazerPedido(orig){
   const endId=orig==="mob"?"input-end-d":"input-end";
   const end=document.getElementById(endId).value.trim();
@@ -301,7 +290,6 @@ async function fazerPedido(orig){
   btn.disabled=false;
 }
 
-/* ── meus pedidos ── */
 async function carregarMeusPedidos(){
   try{
     const res=await fetch(`${API}/pedidos/meus`,{headers:userHeaders()});
@@ -353,7 +341,6 @@ async function cancelarPedido(id){
   }catch{toast("Erro ao cancelar","err");}
 }
 
-/* ── cozinha ── */
 async function carregarCozinha(){
   try{
     const [pRes,fRes]=await Promise.all([
@@ -419,7 +406,6 @@ async function atualizarStatus(id,status){
   }catch{toast("Erro ao atualizar","err");}
 }
 
-/* ── auto refresh ── */
 setInterval(()=>{
   if(!userId) return;
   const pag=document.querySelector(".page.active");
@@ -428,5 +414,4 @@ setInterval(()=>{
   if(pag.id==="page-cozinha") carregarCozinha();
 },5000);
 
-/* ── init ── */
 if(userId) iniciarApp();
