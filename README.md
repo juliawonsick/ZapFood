@@ -1,6 +1,10 @@
 # ZapFood
 
 Sistema simples de delivery, o projeto tem por intuito simular um pedido no site de delivery.
+Desenvolvido por: 
+Carlos Eduardo Tonhelski - RA: 1137093
+João Vinicius Lago dos Santos - RA: 1136868
+Júlia Wonsick Pazzinatto - RA: 1136562
 
 ## Tecnologias usadas
 
