@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>ZapFood</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ══ NGROK BANNER ══ -->
+<div class="ngrok-banner" id="ngrok-banner" style="display:none">
+  🌐 Acesso público via ngrok — compartilhe este link:
+  <span class="ngrok-url" id="ngrok-url-display"></span>
+</div>
+
+<!-- ══ AUTH ══ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">Zap<span>Food</span></div>
+    <p class="auth-sub">Sistema de Delivery Distribuído</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login"    onclick="switchAuthTab('login')">Entrar</button>
+      <button class="auth-tab"        id="tab-cadastro" onclick="switchAuthTab('cadastro')">Cadastrar</button>
+    </div>
+
+    <!-- Login -->
+    <div id="form-login">
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" inputmode="email" id="l-email" placeholder="seu@email.com" oninput="limparErro('l-email')"/>
+        <div class="field-err" id="err-l-email"></div>
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="l-senha" placeholder="••••••" oninput="limparErro('l-senha')"/>
+        <div class="field-err" id="err-l-senha"></div>
+      </div>
+      <button class="btn-main" id="btn-login" onclick="fazerLogin()">Entrar</button>
+      <p class="auth-hint">
+        Cozinha/Admin:<br/>
+        <strong>cozinha@zapfood.com</strong> / <strong>cozinha123</strong>
+      </p>
+    </div>
+
+    <!-- Cadastro -->
+    <div id="form-cadastro" style="display:none">
+      <div class="form-group">
+        <label>Nome completo</label>
+        <input type="text" autocomplete="name" id="c-nome" placeholder="Seu nome" oninput="limparErro('c-nome')"/>
+        <div class="field-err" id="err-c-nome"></div>
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" inputmode="email" autocomplete="email" id="c-email" placeholder="seu@email.com" oninput="limparErro('c-email')"/>
+        <div class="field-err" id="err-c-email"></div>
+      </div>
+      <div class="form-group">
+        <label>Senha (mín. 6 caracteres)</label>
+        <input type="password" autocomplete="new-password" id="c-senha" placeholder="••••••" oninput="limparErro('c-senha')"/>
+        <div class="field-err" id="err-c-senha"></div>
+      </div>
+      <div class="form-group">
+        <label>Confirmar senha</label>
+        <input type="password" autocomplete="new-password" id="c-senha2" placeholder="••••••" oninput="limparErro('c-senha2')"/>
+        <div class="field-err" id="err-c-senha2"></div>
+      </div>
+      <button class="btn-main" id="btn-cadastro" onclick="fazerCadastro()">Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app-screen">
+  <header>
+    <div class="logo">Zap<span>Food</span></div>
+    <div class="header-right">
+      <span class="user-badge" id="user-badge">—</span>
+      <button class="btn-logout" onclick="logout()">Sair</button>
+    </div>
+  </header>
+  <nav class="app-nav" id="app-nav"></nav>
+
+  <!-- CARDÁPIO -->
+  <div id="page-cardapio" class="page">
+    <div class="container">
+      <div class="sec-head">
+        <h2>
+          Cardápio
+          <span id="cache-badge" style="font-family:var(--fb);font-size:.68rem;font-weight:600;padding:3px 9px;border-radius:20px;background:#d1fae5;color:var(--ok);">⚡ Redis</span>
+        </h2>
+        <p>Toque para adicionar ao carrinho</p>
+      </div>
+      <div class="categories" id="cat-scroll">
+        <button class="cat-btn active" onclick="filtrar('Todos',this)">Todos</button>
+        <button class="cat-btn" onclick="filtrar('Lanches',this)">🍔 Lanches</button>
+        <button class="cat-btn" onclick="filtrar('Pizzas',this)">🍕 Pizzas</button>
+        <button class="cat-btn" onclick="filtrar('Pratos',this)">🍽 Pratos</button>
+        <button class="cat-btn" onclick="filtrar('Porções',this)">🍟 Porções</button>
+        <button class="cat-btn" onclick="filtrar('Bebidas',this)">🥤 Bebidas</button>
+        <button class="cat-btn" onclick="filtrar('Sobremesas',this)">🍮 Sobremesas</button>
+      </div>
+      <div class="cardapio-layout">
+        <div class="menu-grid" id="menu-grid"><p style="color:var(--muted)">Carregando...</p></div>
+        <!-- sidebar desktop -->
+        <div class="cart-panel">
+          <div class="cart-title">Carrinho <span class="cart-count" id="cart-count">0</span></div>
+          <div id="cart-items"><div class="cart-empty">Adicione itens ao carrinho!</div></div>
+          <div id="cart-total-box" class="cart-total-box" style="display:none">
+            <div class="ctr"><span>Subtotal</span><span id="ct-sub">R$ 0,00</span></div>
+            <div class="ctr"><span>Entrega</span><span>Grátis</span></div>
+            <div class="ctf"><span>Total</span><span id="ct-tot">R$ 0,00</span></div>
+          </div>
+          <div id="cart-form-box" style="display:none">
+            <div class="form-group" style="margin-top:10px">
+              <label>Endereço de entrega</label>
+              <input type="text" id="input-end" placeholder="Rua, número, bairro, cidade" oninput="limparErro('input-end')"/>
+              <div class="field-err" id="err-input-end"></div>
+            </div>
+          </div>
+          <button class="btn-main" id="btn-pedido" onclick="fazerPedido('desk')" disabled style="margin-top:8px">
+            Adicione itens para pedir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEUS PEDIDOS -->
+  <div id="page-pedidos" class="page">
+    <div class="container">
+      <div class="pedidos-header">
+        <div class="sec-head" style="margin-bottom:0"><h2>Meus Pedidos</h2><p>Acompanhe em tempo real</p></div>
+        <button class="btn-sec" onclick="carregarMeusPedidos()">↻ Atualizar</button>
+      </div>
+      <div class="pedidos-list" id="meus-pedidos-list">
+        <p style="color:var(--muted);font-size:.87rem">Nenhum pedido ainda.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- COZINHA -->
+  <div id="page-cozinha" class="page">
+    <div class="container">
+      <div class="pedidos-header">
+        <div class="sec-head" style="margin-bottom:0"><h2>Painel da Cozinha</h2><p>Todos os pedidos</p></div>
+        <button class="btn-sec" onclick="carregarCozinha()">↻ Atualizar</button>
+      </div>
+      <div class="cozinha-stats">
+        <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val" id="st-total">0</div></div>
+        <div class="stat-card"><div class="stat-label">Em preparo</div><div class="stat-val" id="st-prep" style="color:var(--warn)">0</div></div>
+        <div class="stat-card"><div class="stat-label">Entregues</div><div class="stat-val" id="st-ent" style="color:var(--ok)">0</div></div>
+        <div class="stat-card"><div class="stat-label">Receita</div><div class="stat-val" id="st-rec" style="color:var(--accent);font-size:1.1rem">R$ 0</div></div>
+      </div>
+      <div class="fila-badge">
+        <div class="fila-dot"></div>
+        RabbitMQ — <strong style="margin:0 2px">fila_pedidos</strong>: <strong id="fila-msgs">—</strong> pendentes
+      </div>
+      <div class="pedidos-list" id="cozinha-list"><p style="color:var(--muted);font-size:.87rem">Carregando...</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB + Drawer mobile -->
+<button class="cart-fab" id="cart-fab" onclick="abrirDrawer()">
+  🛒 Carrinho <span class="fab-badge" id="fab-count">0</span>
+</button>
+<div class="cart-overlay" id="cart-overlay" onclick="fecharDrawer()"></div>
+<div class="cart-drawer" id="cart-drawer">
+  <div class="drawer-handle"></div>
+  <div class="cart-title">Carrinho <span class="cart-count" id="cart-count-d">0</span></div>
+  <div id="cart-items-d"><div class="cart-empty">Adicione itens ao carrinho!</div></div>
+  <div id="cart-total-box-d" class="cart-total-box" style="display:none">
+    <div class="ctr"><span>Subtotal</span><span id="ct-sub-d">R$ 0,00</span></div>
+    <div class="ctr"><span>Entrega</span><span>Grátis</span></div>
+    <div class="ctf"><span>Total</span><span id="ct-tot-d">R$ 0,00</span></div>
+  </div>
+  <div id="cart-form-box-d" style="display:none">
+    <div class="form-group" style="margin-top:10px">
+      <label>Endereço de entrega</label>
+      <input type="text" id="input-end-d" placeholder="Rua, número, bairro, cidade" oninput="limparErro('input-end-d')"/>
+      <div class="field-err" id="err-input-end-d"></div>
+    </div>
+  </div>
+  <button class="btn-main" id="btn-pedido-d" onclick="fazerPedido('mob')" disabled style="margin-top:8px">
+    Adicione itens para pedir
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+CARDAPIO = [
+    {"id":1,  "nome":"X-Burguer Clássico",  "preco":28.90, "categoria":"Lanches",    "emoji":"🍔", "descricao":"Hambúrguer 180g, queijo, alface, tomate"},
+    {"id":2,  "nome":"X-Bacon Duplo",       "preco":36.90, "categoria":"Lanches",    "emoji":"🥓", "descricao":"Dois hambúrgueres, bacon crocante, cheddar"},
+    {"id":3,  "nome":"X-Veggie",            "preco":31.90, "categoria":"Lanches",    "emoji":"🥗", "descricao":"Hambúrguer de grão-de-bico, queijo, rúcula"},
+    {"id":4,  "nome":"Pizza Margherita",    "preco":42.00, "categoria":"Pizzas",     "emoji":"🍕", "descricao":"Molho de tomate, muçarela, manjericão fresco"},
+    {"id":5,  "nome":"Pizza Calabresa",     "preco":45.00, "categoria":"Pizzas",     "emoji":"🍕", "descricao":"Calabresa fatiada, cebola, azeitona preta"},
+    {"id":6,  "nome":"Pizza Frango+Catupiry","preco":47.00,"categoria":"Pizzas",     "emoji":"🍕", "descricao":"Frango desfiado com catupiry cremoso"},
+    {"id":7,  "nome":"Frango Grelhado",     "preco":32.00, "categoria":"Pratos",     "emoji":"🍗", "descricao":"Frango grelhado, arroz, feijão e salada"},
+    {"id":8,  "nome":"Macarrão Bolonhesa",  "preco":29.90, "categoria":"Pratos",     "emoji":"🍝", "descricao":"Macarrão ao molho bolonhesa com parmesão"},
+    {"id":9,  "nome":"Batata Frita Grande", "preco":18.00, "categoria":"Porções",    "emoji":"🍟", "descricao":"Porção grande de batata frita bem crocante"},
+    {"id":10, "nome":"Onion Rings",         "preco":22.00, "categoria":"Porções",    "emoji":"🧅", "descricao":"Anéis de cebola empanados e fritos"},
+    {"id":11, "nome":"Refrigerante 500ml",  "preco": 8.00, "categoria":"Bebidas",    "emoji":"🥤", "descricao":"Coca-Cola, Guaraná ou Fanta"},
+    {"id":12, "nome":"Suco Natural 400ml",  "preco":12.00, "categoria":"Bebidas",    "emoji":"🍊", "descricao":"Laranja, limão ou maracujá"},
+    {"id":13, "nome":"Brownie c/ Sorvete",  "preco":19.90, "categoria":"Sobremesas", "emoji":"🍫", "descricao":"Brownie quentinho com sorvete de creme"},
+    {"id":14, "nome":"Pudim de Leite",      "preco":14.00, "categoria":"Sobremesas", "emoji":"🍮", "descricao":"Pudim caseiro com calda de caramelo"},
+]
