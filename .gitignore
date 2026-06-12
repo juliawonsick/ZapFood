@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+
+# Banco local gerado na apresentacao
+*.db
+*.sqlite
+*.sqlite3
+
+# Sistema/IDE
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Logs e temporarios
+*.log
+tmp/
+temp/
+
+# Variaveis de ambiente
+.env
+.env.*
+
+# Docker/local
+data/

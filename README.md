@@ -1,10 +1,8 @@
 # ZapFood
 
-Sistema simples de delivery, o projeto tem por intuito simular um pedido no site de delivery.
-Desenvolvido por: 
-Carlos Eduardo Tonhelski - RA: 1137093
-João Vinicius Lago dos Santos - RA: 1136868
-Júlia Wonsick Pazzinatto - RA: 1136562
+Sistema simples de delivery feito para a disciplina de Computacao Distribuida.
+
+O projeto tem um frontend em HTML, CSS e JavaScript, e uma API em Python com FastAPI. A ideia e simular um pedido de comida passando por uma fila e tendo o status atualizado pela cozinha.
 
 ## Tecnologias usadas
 
@@ -81,3 +79,7 @@ GET  /cozinha/pedidos
 PATCH /cozinha/pedidos/{pedido_id}
 GET  /cozinha/fila
 ```
+
+## Observacao
+
+O cliente pode fazer mais de um pedido ao mesmo tempo. O frontend tambem evita recarregar o cardapio automaticamente para nao ficar mexendo os elementos da tela.

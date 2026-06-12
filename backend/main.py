@@ -1,7 +1,3 @@
-"""
-ZapFood — Backend Completo
-Disciplina: Computação Distribuída (CCOM4N)
-"""
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +13,19 @@ sys.path.insert(0, os.path.dirname(__file__))
 import database as db
 import auth
 from cardapio_data import CARDAPIO
+
+
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
+RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", "5672"))
+RABBITMQ_USER = os.getenv("RABBITMQ_USER", "guest")
+RABBITMQ_PASS = os.getenv("RABBITMQ_PASS", "guest")
+START_EMBEDDED_WORKER = os.getenv("ZAPFOOD_EMBEDDED_WORKER", "1") == "1"
+
+FILA = "fila_pedidos"
+DLX = "dlx_pedidos"
+DLQ = "fila_pedidos_mortos"
 
 
 app = FastAPI(title="ZapFood API", version="2.0.0")
@@ -48,7 +57,7 @@ def servir_css():
 
 
 try:
-    rc = redis.Redis(host="localhost", port=6379, decode_responses=True)
+    rc = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
     rc.ping()
     print("[OK] Redis conectado")
 except Exception as e:
@@ -56,24 +65,51 @@ except Exception as e:
     rc = None
 
 
-FILA = "fila_pedidos"
-
-
 def rabbit_channel():
-    conn = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+    credenciais = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
+    parametros = pika.ConnectionParameters(
+        host=RABBITMQ_HOST,
+        port=RABBITMQ_PORT,
+        credentials=credenciais,
+    )
+    conn = pika.BlockingConnection(parametros)
     ch = conn.channel()
-    ch.queue_declare(queue=FILA, durable=True)
+
+    def declarar_topologia(canal, recriar_fila=False):
+        canal.exchange_declare(exchange=DLX, exchange_type="fanout", durable=True)
+        canal.queue_declare(queue=DLQ, durable=True)
+        canal.queue_bind(queue=DLQ, exchange=DLX)
+        if recriar_fila:
+            canal.queue_delete(queue=FILA)
+        canal.queue_declare(
+            queue=FILA,
+            durable=True,
+            arguments={"x-dead-letter-exchange": DLX},
+        )
+
+    try:
+        declarar_topologia(ch)
+    except pika.exceptions.ChannelClosedByBroker as e:
+        if "inequivalent arg" not in str(e):
+            raise
+        conn.close()
+        conn = pika.BlockingConnection(parametros)
+        ch = conn.channel()
+        declarar_topologia(ch, recriar_fila=True)
+
     return conn, ch
 
 
 def publicar(pedido: dict):
     try:
         conn, ch = rabbit_channel()
+        ch.confirm_delivery()
         ch.basic_publish(
             exchange="",
             routing_key=FILA,
             body=json.dumps(pedido),
             properties=pika.BasicProperties(delivery_mode=2),
+            mandatory=True,
         )
         conn.close()
         print(f"[FILA] Publicado na fila: {pedido['id'][:8]}")
@@ -123,14 +159,16 @@ def consumer_loop():
             conn, ch = rabbit_channel()
 
             def callback(ch, method, props, body):
-                pedido = json.loads(body)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
-
-                threading.Thread(
-                    target=processar_pedido,
-                    args=(pedido,),
-                    daemon=True
-                ).start()
+                try:
+                    pedido = json.loads(body)
+                    processar_pedido(pedido)
+                    ch.basic_ack(delivery_tag=method.delivery_tag)
+                except Exception as e:
+                    print(f"[ERRO] Pedido rejeitado para DLQ: {e}")
+                    ch.basic_nack(
+                        delivery_tag=method.delivery_tag,
+                        requeue=False,
+                    )
 
             ch.basic_qos(prefetch_count=1)
             ch.basic_consume(queue=FILA, on_message_callback=callback)
@@ -143,7 +181,8 @@ def consumer_loop():
             time.sleep(5)
 
 
-threading.Thread(target=consumer_loop, daemon=True).start()
+if START_EMBEDDED_WORKER:
+    threading.Thread(target=consumer_loop, daemon=True).start()
 
 
 def cache_cardapio():
@@ -186,6 +225,7 @@ class CadastroInput(BaseModel):
     @field_validator("senha")
     @classmethod
     def senha_valida(cls, v):
+        v = v.strip()
         if len(v) < 6:
             raise ValueError("Senha deve ter ao menos 6 caracteres")
         return v
@@ -199,6 +239,11 @@ class LoginInput(BaseModel):
     @classmethod
     def email_fmt(cls, v):
         return v.strip().lower()
+
+    @field_validator("senha")
+    @classmethod
+    def senha_fmt(cls, v):
+        return v.strip()
 
 
 class ItemPedido(BaseModel):
@@ -312,6 +357,9 @@ def login(dados: LoginInput):
 
     if not usuario or not auth.verificar_senha(dados.senha, usuario["senha_hash"]):
         raise HTTPException(status_code=401, detail="E-mail ou senha incorretos")
+
+    if auth.precisa_atualizar_hash(usuario["senha_hash"]):
+        db.atualizar_senha_usuario(usuario["id"], auth.hash_senha(dados.senha))
 
     return {
         "perfil": usuario["perfil"],

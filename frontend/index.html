@@ -9,13 +9,6 @@
 </head>
 <body>
 
-<!-- ══ NGROK BANNER ══ -->
-<div class="ngrok-banner" id="ngrok-banner" style="display:none">
-  🌐 Acesso público via ngrok — compartilhe este link:
-  <span class="ngrok-url" id="ngrok-url-display"></span>
-</div>
-
-<!-- ══ AUTH ══ -->
 <div id="auth-screen">
   <div class="auth-box">
     <div class="auth-logo">Zap<span>Food</span></div>
@@ -25,7 +18,7 @@
       <button class="auth-tab"        id="tab-cadastro" onclick="switchAuthTab('cadastro')">Cadastrar</button>
     </div>
 
-    <!-- Login -->
+
     <div id="form-login">
       <div class="form-group">
         <label>E-mail</label>
@@ -44,7 +37,7 @@
       </p>
     </div>
 
-    <!-- Cadastro -->
+  
     <div id="form-cadastro" style="display:none">
       <div class="form-group">
         <label>Nome completo</label>
@@ -71,7 +64,6 @@
   </div>
 </div>
 
-<!-- ══ APP ══ -->
 <div id="app-screen">
   <header>
     <div class="logo">Zap<span>Food</span></div>
@@ -82,7 +74,7 @@
   </header>
   <nav class="app-nav" id="app-nav"></nav>
 
-  <!-- CARDÁPIO -->
+
   <div id="page-cardapio" class="page">
     <div class="container">
       <div class="sec-head">
@@ -103,7 +95,6 @@
       </div>
       <div class="cardapio-layout">
         <div class="menu-grid" id="menu-grid"><p style="color:var(--muted)">Carregando...</p></div>
-        <!-- sidebar desktop -->
         <div class="cart-panel">
           <div class="cart-title">Carrinho <span class="cart-count" id="cart-count">0</span></div>
           <div id="cart-items"><div class="cart-empty">Adicione itens ao carrinho!</div></div>
@@ -126,8 +117,6 @@
       </div>
     </div>
   </div>
-
-  <!-- MEUS PEDIDOS -->
   <div id="page-pedidos" class="page">
     <div class="container">
       <div class="pedidos-header">
@@ -139,8 +128,6 @@
       </div>
     </div>
   </div>
-
-  <!-- COZINHA -->
   <div id="page-cozinha" class="page">
     <div class="container">
       <div class="pedidos-header">
@@ -161,10 +148,8 @@
     </div>
   </div>
 </div>
-
-<!-- FAB + Drawer mobile -->
 <button class="cart-fab" id="cart-fab" onclick="abrirDrawer()">
-  🛒 Carrinho <span class="fab-badge" id="fab-count">0</span>
+  Carrinho <span class="fab-badge" id="fab-count">0</span>
 </button>
 <div class="cart-overlay" id="cart-overlay" onclick="fecharDrawer()"></div>
 <div class="cart-drawer" id="cart-drawer">

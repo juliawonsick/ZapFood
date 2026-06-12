@@ -2,7 +2,6 @@ const API = window.location.port === "8000" || window.location.hostname !== "loc
   ? window.location.origin
   : "http://localhost:8000";
 
-
 (function detectNgrok(){
   if(API.includes("ngrok")){
     document.getElementById("ngrok-banner").style.display="flex";
@@ -180,7 +179,7 @@ async function carregarCardapio(){
       badge.textContent=`⚡ Redis · TTL ${data.ttl}s`;
       Object.assign(badge.style,{background:"#d1fae5",color:"#2d7a4f"});
     } else {
-      badge.textContent="📦 Cache recarregado";
+      badge.textContent="Cache recarregado";
       Object.assign(badge.style,{background:"#fef3c7",color:"#b07d1a"});
     }
     renderMenu();
@@ -277,7 +276,7 @@ async function fazerPedido(orig){
     });
     const data=await res.json();
     if(res.ok){
-      toast(`✅ Pedido #${data.pedido_id.slice(0,8)} criado! ${fmt(data.total)}`);
+      toast(`Pedido #${data.pedido_id.slice(0,8)} criado! ${fmt(data.total)}`);
       carrinho={};
       ["input-end","input-end-d"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
       renderCarrinho(); fecharDrawer();
