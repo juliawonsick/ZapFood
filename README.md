@@ -50,15 +50,16 @@ senha: cozinha123
 
 ## Como funciona
 
-O cliente abre o cardapio, adiciona itens no carrinho e faz o pedido. A API valida os dados, calcula o total, salva o pedido no Redis e envia uma mensagem para a fila do RabbitMQ.
+O cliente abre o cardapio, adiciona itens no carrinho e faz o pedido. A API valida os dados, calcula o total, salva o pedido no Redis e publica uma mensagem na fila do RabbitMQ.
 
-Uma thread no backend consome essa fila e vai atualizando o status do pedido:
+O pedido e consumido por um worker. Para facilitar a apresentacao local, esse worker pode rodar embutido no backend. Tambem existe o arquivo `backend/worker.py`, que permite rodar o consumidor separado da API, mais parecido com a arquitetura base do trabalho.
+
+A fila usa `prefetch_count=1`, ACK manual e Dead Letter Queue. Se ocorrer erro no processamento, a mensagem pode ser enviada para a fila morta.
+
+Status do pedido:
 
 ```text
 recebido -> confirmado -> preparando -> pronto -> entregando -> entregue
-```
-
-O cliente consegue acompanhar os pedidos pela tela "Meus Pedidos". A cozinha consegue ver todos os pedidos e tambem alterar o status manualmente.
 
 ## Sobre login
 
